@@ -1,0 +1,855 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>동자스님 키우기</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Jua&family=Gowun+Dodum&display=swap">
+<style>
+/* Layout: 산사 마당(무대)과 게이지가 왼쪽, 탭 패널이 오른쪽. 좁은 화면에선 한 줄로 쌓임 */
+:root{
+  --bg:#E4ECE6; --card:#FAFCF8; --card2:#EFF4EE; --ink:#3A2E28; --muted:#75695F; --line:#D2DBD1;
+  --robe:#E0843A; --green:#3B8673; --red:#BF4A3E; --blue:#2E5C88; --gold:#D9A43C; --pink:#E58FA5;
+  --on-accent:#FFFFFF; --shadow:0 2px 0 rgba(58,46,40,.12);
+  --f-display:'Jua','Gowun Dodum','Apple SD Gothic Neo','Malgun Gothic',system-ui,sans-serif;
+  --f-body:'Gowun Dodum','Apple SD Gothic Neo','Malgun Gothic',system-ui,sans-serif;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#131B21; --card:#1D2830; --card2:#24313A; --ink:#EFE7DA; --muted:#A99E92; --line:#33434D;
+  --robe:#F09A50; --green:#6CC0A7; --red:#E57B6E; --blue:#86AEDA; --gold:#EDC468; --pink:#F2A7BA;
+  --on-accent:#1A1410; --shadow:0 2px 0 rgba(0,0,0,.35); color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#131B21; --card:#1D2830; --card2:#24313A; --ink:#EFE7DA; --muted:#A99E92; --line:#33434D;
+  --robe:#F09A50; --green:#6CC0A7; --red:#E57B6E; --blue:#86AEDA; --gold:#EDC468; --pink:#F2A7BA;
+  --on-accent:#1A1410; --shadow:0 2px 0 rgba(0,0,0,.35); color-scheme:dark}
+html,body{height:100%}
+[hidden]{display:none!important}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.55;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+button{font:inherit;color:inherit;cursor:pointer}
+button:focus-visible,input:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
+button:disabled{cursor:not-allowed;opacity:.45}
+h1,h2,h3{font-family:var(--f-display);font-weight:400;margin:0;text-wrap:balance;letter-spacing:.01em}
+#app{max-width:1060px;margin:0 auto;padding-block:12px 32px;display:grid;gap:14px;grid-template-columns:minmax(0,1fr)}
+@media (min-width:900px){#app{grid-template-columns:minmax(0,1.05fr) minmax(0,1fr);align-items:start}.left{position:sticky;top:12px}}
+.left,.right{display:grid;gap:12px;min-width:0}
+
+/* 상단 */
+.top{display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center;justify-content:space-between}
+.who{display:flex;align-items:baseline;gap:8px;min-width:0}
+.who h1{font-size:1.55rem;color:var(--robe)}
+.who span{color:var(--muted);font-size:.9rem}
+.meta{display:flex;gap:8px;flex-wrap:wrap}
+.pill{display:inline-flex;align-items:center;gap:6px;background:var(--card);border:1px solid var(--line);border-radius:999px;padding:3px 11px;font-size:.88rem;font-variant-numeric:tabular-nums;white-space:nowrap}
+.pill b{font-family:var(--f-display);font-weight:400;font-size:1rem}
+.yeop{width:15px;height:15px;border-radius:50%;background:var(--gold);position:relative;display:inline-block;box-shadow:inset 0 0 0 2px rgba(0,0,0,.18)}
+.yeop::after{content:"";position:absolute;left:50%;top:50%;width:5px;height:5px;transform:translate(-50%,-50%);background:var(--card)}
+
+/* 무대 */
+.stage{position:relative;border-radius:22px;overflow:hidden;aspect-ratio:400/270;max-width:100%;background:#CFE3EA;border:2px solid var(--line);user-select:none;-webkit-user-select:none}
+.stage svg.scene{position:absolute;inset:0;width:100%;height:100%;display:block}
+:root[data-theme="dark"] .stage svg.scene{filter:brightness(.82) saturate(.9)}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .stage svg.scene{filter:brightness(.82) saturate(.9)}}
+.hero{position:absolute;left:50%;bottom:3%;width:30%;transform:translateX(calc(-50% + var(--x,0px)));transition:transform 2.6s ease-in-out;background:none;border:0;padding:0;z-index:3}
+.hero .bob{animation:bob 2.4s ease-in-out infinite;transform-origin:50% 100%}
+.hero.flip svg{transform:scaleX(-1)}
+.hero.hop .bob{animation:hop .45s ease-out 1}
+.hero svg{width:100%;height:auto;display:block;overflow:visible}
+.eyes{animation:blink 4.2s infinite;transform-box:fill-box;transform-origin:center}
+@keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-3%)}}
+@keyframes hop{0%{transform:translateY(0)}40%{transform:translateY(-14%) scale(1.03,.97)}100%{transform:translateY(0)}}
+@keyframes blink{0%,92%,100%{transform:scaleY(1)}95%{transform:scaleY(.1)}}
+.bubble{position:absolute;left:50%;bottom:58%;transform:translateX(calc(-50% + var(--x,0px)));background:#FFFDF8;color:#3A2E28;border:2px solid #5A3E33;border-radius:16px;padding:5px 12px;font-size:.92rem;max-width:62%;text-align:center;z-index:4;transition:opacity .3s,transform 2.6s ease-in-out;pointer-events:none}
+.bubble::after{content:"";position:absolute;left:50%;bottom:-8px;width:12px;height:12px;background:#FFFDF8;border-right:2px solid #5A3E33;border-bottom:2px solid #5A3E33;transform:translateX(-50%) rotate(45deg)}
+.bubble[data-off]{opacity:0}
+.mote{position:absolute;width:34px;height:34px;border-radius:50%;border:0;padding:0;z-index:5;background:radial-gradient(circle at 50% 45%,#FFF7D6 0 28%,rgba(255,214,120,.75) 45%,rgba(255,214,120,0) 70%);animation:float 3s ease-in-out infinite}
+.mote::after{content:"";position:absolute;inset:11px;border-radius:50%;background:#F4C25A;box-shadow:inset 0 0 0 2px rgba(120,80,20,.35)}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+.pop{position:absolute;z-index:6;font-family:var(--f-display);color:#8A5A12;background:#FFF4D2;border-radius:10px;padding:0 6px;pointer-events:none;animation:popup 1s ease-out forwards}
+@keyframes popup{to{transform:translateY(-30px);opacity:0}}
+.fx{position:absolute;inset:0;pointer-events:none;z-index:2;overflow:hidden}
+.fx i{position:absolute;top:-6%;display:block;animation:fall linear infinite}
+@keyframes fall{to{transform:translate(var(--dx,20px),118%) rotate(260deg)}}
+.stagebar{position:absolute;left:10px;top:10px;z-index:4;display:flex;gap:6px}
+.stagebar .pill{background:rgba(255,253,248,.88);color:#3A2E28;border-color:rgba(90,62,51,.2)}
+.stagebar button.pill{cursor:pointer}
+
+/* 게이지 */
+.gauges{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:14px;display:grid;gap:12px}
+.apt-head{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.apt-head h3{font-size:1.05rem}
+.apt-head .tier{font-family:var(--f-display);color:var(--robe);font-size:1.1rem}
+.bar{height:12px;border-radius:999px;background:var(--card2);overflow:hidden;border:1px solid var(--line)}
+.bar>i{display:block;height:100%;border-radius:999px;background:var(--robe);transition:width .5s}
+.apt .bar{height:16px}
+.apt .bar>i{background:linear-gradient(90deg,var(--gold),var(--robe))}
+.ticks{display:flex;justify-content:space-between;font-size:.72rem;color:var(--muted);margin-top:3px}
+.karma .bar{position:relative;background:linear-gradient(90deg,color-mix(in srgb,var(--red) 22%,var(--card2)),var(--card2) 50%,color-mix(in srgb,var(--green) 22%,var(--card2)))}
+.karma .mark{position:absolute;top:-3px;width:6px;height:16px;border-radius:3px;background:var(--ink);transform:translateX(-50%);transition:left .5s}
+.karma .mid{position:absolute;left:50%;top:0;bottom:0;width:1px;background:var(--line)}
+.row3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.mini label{display:flex;justify-content:space-between;font-size:.82rem;color:var(--muted)}
+.mini b{color:var(--ink);font-variant-numeric:tabular-nums;font-weight:400}
+.mini .bar{height:8px}
+.lbl{display:flex;justify-content:space-between;font-size:.86rem;color:var(--muted);margin-bottom:4px}
+.lbl b{color:var(--ink);font-weight:400;font-variant-numeric:tabular-nums}
+
+/* 탭 */
+.tabs{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:4px;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:4px}
+.tabs button{border:0;background:none;border-radius:12px;padding:8px 2px;font-family:var(--f-display);font-size:.98rem;color:var(--muted)}
+.tabs button[aria-selected="true"]{background:var(--robe);color:var(--on-accent)}
+.panel{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:16px;display:grid;gap:14px;min-width:0}
+.panel h2{font-size:1.25rem}
+.sub{color:var(--muted);font-size:.88rem;margin:0}
+.slots{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.slot{border:2px dashed var(--line);background:var(--card2);border-radius:14px;padding:8px 6px;text-align:center;display:grid;gap:2px;justify-items:center}
+.slot small{color:var(--muted);font-size:.78rem}
+.slot .ic{font-size:1.5rem;line-height:1.2}
+.slot .nm{font-family:var(--f-display);font-size:.95rem}
+.slot[aria-pressed="true"]{border:2px solid var(--robe);background:color-mix(in srgb,var(--robe) 12%,var(--card))}
+.grp{display:grid;gap:6px}
+.grp h3{font-size:.95rem;color:var(--muted);letter-spacing:.06em}
+.acts{display:grid;grid-template-columns:repeat(auto-fill,minmax(138px,1fr));gap:6px}
+.act{border:1px solid var(--line);background:var(--card);border-radius:12px;padding:7px 9px;text-align:left;display:grid;grid-template-columns:auto 1fr;gap:0 8px;align-items:center}
+.act .ic{font-size:1.3rem;grid-row:span 2}
+.act b{font-weight:400;font-family:var(--f-display);font-size:.98rem}
+.act small{color:var(--muted);font-size:.74rem;line-height:1.3}
+.act:hover{border-color:var(--robe)}
+.btn{border:1px solid var(--line);background:var(--card2);border-radius:12px;padding:9px 14px;font-family:var(--f-display);font-size:1rem}
+.btn.primary{background:var(--robe);color:var(--on-accent);border-color:transparent;box-shadow:var(--shadow)}
+.btn.big{width:100%;padding:13px;font-size:1.15rem}
+.btn.sm{padding:5px 10px;font-size:.88rem}
+.list{display:grid;gap:8px}
+.item{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:10px;align-items:center;border:1px solid var(--line);border-radius:14px;padding:9px 11px;background:var(--card)}
+.item .ic{font-size:1.6rem;width:36px;text-align:center}
+.item b{font-family:var(--f-display);font-weight:400;font-size:1rem}
+.item small{display:block;color:var(--muted);font-size:.78rem}
+.item.badfood{background:color-mix(in srgb,var(--red) 7%,var(--card))}
+.secret{border-top:2px dashed var(--line);padding-top:12px;display:grid;gap:8px}
+.plots{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:8px}
+.plot{border-radius:14px;padding:10px;min-height:118px;display:grid;gap:4px;align-content:space-between;justify-items:center;text-align:center;border:0;
+  background:repeating-linear-gradient(0deg,#8A6446 0 6px,#7A5639 6px 12px);color:#FFF6E6}
+.plot .ic{font-size:2rem;line-height:1}
+.plot small{font-size:.8rem}
+.plot .bar{width:100%;height:7px;background:rgba(255,255,255,.25);border:0}
+.plot .bar>i{background:#9BD27E}
+.plot.ready{box-shadow:0 0 0 3px var(--gold)}
+.plot.empty{opacity:.92}
+.seedrow{display:flex;flex-wrap:wrap;gap:6px}
+.chip{display:inline-flex;align-items:center;gap:4px;border:1px solid var(--line);background:var(--card2);border-radius:999px;padding:4px 10px;font-size:.86rem}
+.chip[aria-pressed="true"]{border-color:var(--green);background:color-mix(in srgb,var(--green) 16%,var(--card));}
+.inv{display:flex;flex-wrap:wrap;gap:6px}
+.wears{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:8px}
+.wear{border:1px solid var(--line);border-radius:14px;padding:8px;display:grid;gap:4px;justify-items:center;text-align:center;background:var(--card)}
+.wear .ic{font-size:1.5rem}
+.wear[data-on]{border:2px solid var(--robe)}
+.wear small{color:var(--muted);font-size:.76rem}
+.stats{display:grid;gap:9px}
+.stat .lbl small{color:var(--muted)}
+.gal{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:8px}
+.gal div{border:1px solid var(--line);border-radius:12px;padding:8px 10px;background:var(--card2);font-size:.86rem}
+.gal div b{display:block;font-family:var(--f-display);font-weight:400}
+.gal div.lock{color:var(--muted);border-style:dashed}
+.kv{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:6px}
+.kv span{background:var(--card2);border-radius:10px;padding:6px 10px;font-size:.86rem}
+.kv b{font-weight:400;font-family:var(--f-display)}
+
+/* 모달 */
+#ov,#title{position:fixed;inset:0;z-index:50;display:grid;place-items:center;background:rgba(30,24,20,.5);
+  padding:max(16px,env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-right,0px)) max(16px,env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px));overflow:auto}
+.mcard{width:min(440px,100%);background:var(--card);border-radius:22px;padding:18px;display:grid;gap:10px;border:2px solid var(--line);box-shadow:0 18px 50px rgba(0,0,0,.25);animation:rise .25s ease-out}
+@keyframes rise{from{transform:translateY(14px);opacity:0}}
+.mcard h2{font-size:1.35rem;text-align:center}
+.mart{display:grid;place-items:center;background:linear-gradient(var(--card2),color-mix(in srgb,var(--gold) 14%,var(--card2)));border-radius:16px;padding:8px}
+.artwrap{position:relative;width:130px}
+.artwrap svg{width:100%;height:auto;display:block;overflow:visible}
+.artwrap .badge{position:absolute;right:-18px;top:6px;font-size:2rem;background:var(--card);border-radius:50%;width:48px;height:48px;display:grid;place-items:center;border:2px solid var(--line)}
+.mbody{display:grid;gap:6px}
+.mbody p{margin:0}
+.mbody .note{color:var(--muted);font-size:.88rem}
+.chips{display:flex;flex-wrap:wrap;gap:5px;justify-content:center}
+.d{border-radius:999px;padding:2px 9px;font-size:.84rem;font-variant-numeric:tabular-nums;border:1px solid}
+.d.up{color:var(--green);border-color:color-mix(in srgb,var(--green) 45%,transparent);background:color-mix(in srgb,var(--green) 10%,transparent)}
+.d.dn{color:var(--red);border-color:color-mix(in srgb,var(--red) 45%,transparent);background:color-mix(in srgb,var(--red) 10%,transparent)}
+.mbtns{display:grid;gap:8px}
+.choice{text-align:left;display:grid;gap:1px}
+.choice small{font-family:var(--f-body);font-size:.8rem;opacity:.8}
+.titlecard{width:min(460px,100%);background:var(--card);border-radius:26px;padding:24px 20px;display:grid;gap:12px;justify-items:center;text-align:center;border:2px solid var(--line)}
+.titlecard h1{font-size:2.5rem;color:var(--robe);line-height:1.1}
+.titlecard .artwrap{width:150px}
+.titlecard input{font:inherit;font-size:1.1rem;text-align:center;border:2px solid var(--line);border-radius:12px;padding:8px 12px;background:var(--card2);color:var(--ink);width:min(220px,100%)}
+.titlecard .btns{display:grid;gap:8px;width:min(280px,100%)}
+.ending-stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:4px;font-size:.84rem}
+.ending-stats span{background:var(--card2);border-radius:8px;padding:3px 6px;text-align:center}
+#toast{position:fixed;left:50%;bottom:calc(16px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);z-index:60;background:var(--ink);color:var(--bg);border-radius:14px;padding:9px 16px;max-width:min(92vw,440px);font-size:.92rem;text-align:center;transition:opacity .3s}
+#toast[data-off]{opacity:0;pointer-events:none}
+@media (prefers-reduced-motion: reduce){*{animation:none!important;transition:none!important}}
+</style>
+
+<div id="app">
+  <div class="left">
+    <header class="top">
+      <div class="who"><h1 id="nm">동자스님</h1><span id="age"></span></div>
+      <div class="meta">
+        <span class="pill" id="date"></span>
+        <span class="pill" title="엽전"><i class="yeop"></i><b id="coin">0</b></span>
+        <span class="pill" title="남은 번뇌(일정 칸) 수">번뇌 <b id="bn">108</b></span>
+      </div>
+    </header>
+    <section class="stage" id="stage" aria-label="절 마당">
+      <div id="scene"></div>
+      <div class="fx" id="fx"></div>
+      <div class="stagebar"><span class="pill" id="season"></span><button class="pill" id="snd" aria-label="소리 켜고 끄기"></button></div>
+      <div class="bubble" id="bubble" data-off></div>
+      <button class="hero" id="hero" aria-label="동자스님 쓰다듬기"><div class="bob" id="heroArt"></div></button>
+    </section>
+    <section class="gauges" aria-label="상태">
+      <div class="apt">
+        <div class="apt-head"><h3>스님 자질</h3><span class="tier" id="tier"></span></div>
+        <div class="bar" role="meter" aria-valuemin="0" aria-valuemax="100" id="aptbar"><i></i></div>
+        <div class="ticks"><span>아기 행자</span><span>꼬마 행자</span><span>어엿한 사미</span><span>의젓한 사미</span><span>큰스님 재목</span></div>
+      </div>
+      <div class="karma">
+        <div class="lbl"><span>악업</span><span>카르마 <b id="karmaV">0</b></span><span>선업</span></div>
+        <div class="bar"><span class="mid"></span><span class="mark" id="karmaM"></span></div>
+      </div>
+      <div class="row3">
+        <div class="mini"><label>배부름 <b id="fullV"></b></label><div class="bar"><i id="fullB" style="background:var(--gold)"></i></div></div>
+        <div class="mini"><label>기분 <b id="moodV"></b></label><div class="bar"><i id="moodB" style="background:var(--pink)"></i></div></div>
+        <div class="mini"><label>피로 <b id="tiredV"></b></label><div class="bar"><i id="tiredB" style="background:var(--blue)"></i></div></div>
+      </div>
+    </section>
+  </div>
+  <div class="right">
+    <nav class="tabs" role="tablist" id="tabs"></nav>
+    <section class="panel" id="panel" role="tabpanel"></section>
+  </div>
+</div>
+<div id="ov" hidden></div>
+<div id="title" hidden></div>
+<div id="toast" data-off></div>
+
+<script>
+(()=>{
+const $=s=>document.querySelector(s);
+const rand=(a,b)=>a+Math.floor(Math.random()*(b-a+1));
+const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+const pick=a=>a[Math.floor(Math.random()*a.length)];
+const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+const SAVE='dongja-save-v1', GAL='dongja-endings-v1', SND='dongja-sound-v1';
+function load(k){try{const v=localStorage.getItem(k);return v?JSON.parse(v):null}catch(e){return null}}
+function store(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}
+
+const STAT_KEYS=['wis','pat','com','str','dex','wit'];
+const NAME={wis:'지혜',pat:'인내',com:'자비',str:'체력',dex:'손재주',wit:'엉뚱함',karma:'카르마',full:'배부름',mood:'기분',tired:'피로',coin:'엽전'};
+const DESC={wis:'경전을 이해하고 깨닫는 힘',pat:'졸음과 다리 저림을 견디는 힘',com:'남을 아끼고 돕는 마음',str:'108배도 거뜬한 튼튼함',dex:'연등과 염주를 빚는 솜씨',wit:'모두를 웃게 하는 엉뚱함'};
+const SLOT_N=['상순','중순','하순'];
+const SEASON_N={spring:'봄',summer:'여름',autumn:'가을',winter:'겨울'};
+
+const CROPS={
+  lettuce:{n:'상추',ic:'🌿',cost:3,grow:6,yield:2},
+  potato:{n:'감자',ic:'🥔',cost:5,grow:12,yield:3},
+  goguma:{n:'고구마',ic:'🍠',cost:6,grow:12,yield:3},
+  cabbage:{n:'배추',ic:'🥬',cost:8,grow:16,yield:2},
+  lotus:{n:'연근',ic:'🪷',cost:12,grow:24,yield:2},
+};
+const ACTS={
+  yebul:{n:'새벽 예불',g:'수행',ic:'🔔',fx:{pat:3,wis:1,karma:2,tired:10,mood:-2},say:['졸린 눈을 비비며 목탁 소리에 맞춰 절을 올렸어요.','새벽 공기는 차가웠지만 마음은 맑아졌어요.','종소리가 산 너머까지 퍼져 나갔어요.']},
+  sutra:{n:'경전 공부',g:'수행',ic:'📜',fx:{wis:4,wit:-1,tired:10,mood:-5},say:['반야심경을 소리 내어 읽었어요. 색즉시공… 공즉시색…','어려운 한자를 하나 외웠어요. 뿌듯!','글자 사이로 꾸벅꾸벅. 그래도 한 줄은 외웠어요.']},
+  zen:{n:'참선',g:'수행',ic:'🪨',fx:{pat:4,wis:1,tired:6,mood:-4},say:['다리가 저렸지만 끝까지 앉아 있었어요.','숨을 들이쉬고… 내쉬고… 파리 한 마리가 코에 앉았어요.','마음속 원숭이가 조금 얌전해졌어요.']},
+  bae108:{n:'108배',g:'수행',ic:'🙇',fx:{str:3,pat:3,karma:1,tired:18,mood:-3},say:['…105, 106, 107, 108! 다리가 후들후들.','절을 할 때마다 번뇌가 하나씩 떨어져 나가는 것 같아요.']},
+  sweep:{n:'마당 쓸기',g:'울력',ic:'🧹',fx:{str:2,com:1,karma:1,tired:10},say:['쓱싹쓱싹, 마당이 반질반질해졌어요.','낙엽을 쓸어 모았더니 바람이 다시 흩어 놓았어요. 다시 쓱싹.']},
+  farm:{n:'밭일',g:'울력',ic:'🌱',fx:{str:2,pat:1,tired:12},say:['텃밭에 물을 주고 김을 맸어요. 작물이 쑥쑥 자라요!','지렁이 친구에게 인사하며 흙을 골랐어요.']},
+  errand:{n:'마을 심부름',g:'울력',ic:'🧺',fx:{com:3,wit:1,coin:15,tired:12,mood:3},say:['아랫마을에 떡을 전해 드리고 엽전을 받아 왔어요.','할머니 보살님 짐을 들어 드렸더니 칭찬을 잔뜩 받았어요.']},
+  lantern:{n:'연등 만들기',g:'취미',ic:'🏮',fx:{dex:3,com:1,mood:5,tired:6},say:['한지 꽃잎을 한 장 한 장 붙여 연등을 만들었어요.']},
+  buddha:{n:'불상 닦기',g:'취미',ic:'✨',fx:{karma:3,pat:2,mood:2,tired:8},say:['부처님 코끝까지 정성껏 닦아 드렸어요.','먼지를 털다 재채기를 했어요. 에취! 죄송해요, 부처님.']},
+  beads:{n:'염주 만들기',g:'취미',ic:'📿',fx:{dex:2,pat:2,wis:1,tired:6},say:['보리수 열매를 하나하나 실에 꿰어 염주를 만들었어요.']},
+  nap:{n:'낮잠',g:'쉼',ic:'💤',fx:{tired:-35,mood:8,wit:1},say:['툇마루 볕 좋은 자리에서 쿨쿨.','꿈에서 커다란 떡을 먹었어요.']},
+  hill:{n:'뒷산 놀기',g:'쉼',ic:'⛰️',fx:{mood:18,str:2,wit:3,tired:4},say:['개울에서 가재를 찾고, 바위에 올라 야호!','도토리를 주머니 가득 주워 왔어요.']},
+  prank:{n:'몰래 장난',g:'쉼',ic:'🤭',fx:{wit:5,mood:15,karma:-4,pat:-1,tired:3},say:['큰스님 고무신에 솔방울을 넣어 두었어요. 히히.','목탁에 스티커를 붙여 놓고 시치미를 뗐어요.','공양간 주걱을 몰래 숨겼어요.']},
+};
+const SICK={n:'앓아눕기',ic:'🤒',fx:{tired:-40,mood:-6},say:['너무 무리했나 봐요. 하루 종일 이불 속에서 끙끙 앓았어요.']};
+
+const MEALS=[
+  {id:'juk',n:'공양간 흰죽',ic:'🍚',fx:{full:35,mood:-3},tip:'언제나 먹을 수 있어요'},
+  {id:'bibim',n:'나물 비빔밥',ic:'🥗',need:{lettuce:1},fx:{full:55,str:1,mood:6,karma:1}},
+  {id:'jorim',n:'감자조림 밥상',ic:'🍱',need:{potato:1},fx:{full:60,str:2,pat:1}},
+  {id:'goguma',n:'군고구마',ic:'🍠',need:{goguma:1},fx:{full:45,mood:12,wit:1}},
+  {id:'doenjang',n:'배추 된장국',ic:'🍲',need:{cabbage:1},fx:{full:70,com:1,mood:10,karma:1}},
+  {id:'yeonip',n:'연잎밥',ic:'🍙',need:{lotus:1},fx:{full:85,wis:1,pat:1,com:1,karma:3,mood:10}},
+];
+const BAD=[
+  {id:'ramen',n:'몰래 컵라면',ic:'🍜',cost:10,fx:{full:40,mood:20,karma:-3,wit:2}},
+  {id:'snack',n:'초코 과자',ic:'🍫',cost:8,fx:{full:20,mood:25,karma:-2,wit:2,str:-1}},
+  {id:'soda',n:'톡 쏘는 사이다',ic:'🥤',cost:6,fx:{full:10,mood:15,karma:-1}},
+  {id:'mandu',n:'고기만두',ic:'🥟',cost:20,fx:{full:60,mood:30,karma:-8,wit:3}},
+];
+const WEAR={
+  hat:{n:'모자',list:[{id:'none',n:'맨머리',ic:'🌕',cost:0},{id:'satgat',n:'삿갓',ic:'👒',cost:40},{id:'beanie',n:'털모자',ic:'🧶',cost:30},{id:'lotuspin',n:'연꽃 핀',ic:'🌸',cost:25},{id:'straw',n:'밀짚모자',ic:'🌾',cost:35}]},
+  robe:{n:'옷',list:[{id:'orange',n:'주황 승복',ic:'🟠',cost:0},{id:'gray',n:'회색 승복',ic:'⚪',cost:30},{id:'mint',n:'연두 승복',ic:'🟢',cost:30},{id:'saekdong',n:'색동 저고리',ic:'🌈',cost:60}]},
+  item:{n:'소품',list:[{id:'none',n:'빈손',ic:'✋',cost:0},{id:'moktak',n:'목탁',ic:'🪵',cost:20},{id:'broom',n:'싸리비',ic:'🧹',cost:15},{id:'lantern',n:'내 연등',ic:'🏮',cost:0,lock:'lantern',hint:'연등을 한 번 만들면 생겨요'},{id:'squirrel',n:'다람쥐 친구',ic:'🐿️',cost:0,lock:'squirrel',hint:'뒷산 어딘가에서 만날 수 있어요'}]},
+};
+const TIERS=[[80,'큰스님 재목'],[60,'의젓한 사미'],[40,'어엿한 사미'],[20,'꼬마 행자'],[0,'아기 행자']];
+
+let S=null;
+const UI={tab:'plan',slot:0,seed:'lettuce',reset:false,busy:false};
+let sound=load(SND); if(sound===null) sound=true;
+
+function hasBatchim(s){const c=s.charCodeAt(s.length-1);return c>=0xAC00&&c<=0xD7A3&&(c-0xAC00)%28!==0}
+function nm(){return S.name+(hasBatchim(S.name)?'이':'')}
+const month=()=>((S.ym+2)%12)+1;
+const year=()=>Math.floor(S.ym/12)+1;
+function season(m=month()){return m>=3&&m<=5?'spring':m>=6&&m<=8?'summer':m>=9&&m<=11?'autumn':'winter'}
+function apt(){return clamp(Math.round((S.st.wis+S.st.pat+S.st.com)/3*0.75+S.karma*0.25),0,100)}
+function tierOf(a){return TIERS.find(t=>a>=t[0])[1]}
+
+function newGame(name){
+  S={v:1,name,age:6,ym:0,slots:['yebul','sutra','hill'],
+    st:{wis:5,pat:5,com:8,str:10,dex:5,wit:12},karma:0,full:70,mood:70,tired:10,coin:30,
+    inv:{lettuce:2,potato:1,goguma:0,cabbage:0,lotus:0},lanterns:[],beads:0,
+    plots:[{c:'lettuce',g:3},{c:null,g:0},{c:null,g:0},{c:null,g:0}],
+    owned:{hat:['none'],robe:['orange'],item:['none']},wear:{hat:'none',robe:'orange',item:'none'},
+    flags:{},cnt:{bad:0,craft:0,harvest:0,prank:0,meal:0,caught:0},seen:{},taps:6,lastSeen:Date.now(),done:false};
+}
+function save(){if(!S)return;S.lastSeen=Date.now();store(SAVE,S)}
+
+/* ---------- 효과 ---------- */
+function applyFx(fx,mult=1){
+  const d={};
+  for(const k in fx){let v=fx[k];
+    if(STAT_KEYS.includes(k)){if(v>0)v=Math.max(1,Math.round(v*mult*(1-S.st[k]/130)));const o=S.st[k];S.st[k]=clamp(o+v,0,100);d[k]=S.st[k]-o}
+    else if(k==='karma'){if(v>0&&S.karma>0)v=Math.max(1,Math.round(v*(1-S.karma/160)));const o=S.karma;S.karma=clamp(o+v,-100,100);d[k]=S.karma-o}
+    else if(k==='coin'){const o=S.coin;S.coin=Math.max(0,o+v);d[k]=S.coin-o}
+    else if(k==='full'||k==='mood'||k==='tired'){const o=S[k];S[k]=clamp(o+v,0,100);d[k]=S[k]-o}
+  }
+  return d;
+}
+function merge(a,b){for(const k in b)a[k]=(a[k]||0)+b[k];return a}
+function chipHTML(d){
+  return Object.entries(d).filter(([k,v])=>v).map(([k,v])=>{const good=k==='tired'?v<0:v>0;return `<span class="d ${good?'up':'dn'}">${NAME[k]} ${v>0?'+':''}${v}</span>`}).join('')||'<span class="note">변화 없음</span>';
+}
+function fxText(fx){return Object.entries(fx).filter(([k])=>k!=='tired'||true).map(([k,v])=>`${NAME[k]}${v>0?'+':''}${v}`).join(' ')}
+function own(cat,id){if(!S.owned[cat].includes(id))S.owned[cat].push(id)}
+
+/* ---------- 그림 ---------- */
+const ROBES={orange:['#E58A3A','#C46F26'],gray:['#9097A0','#6E757C'],mint:['#9FCC97','#76A970'],saekdong:['#F6F0E2','#D8CDB6']};
+const INK='#5A3E33', SKIN='#F8DCC4';
+function charSVG(o={}){
+  const w=o.wear||S.wear, mood=o.mood??S.mood, karma=o.karma??S.karma, full=o.full??S.full, tired=o.tired??S.tired;
+  const [rc,rd]=ROBES[w.robe]||ROBES.orange; const u=Math.random().toString(36).slice(2,7);
+  const sd=w.robe==='saekdong';
+  const sleeve=sd?`url(#sd${u})`:rc;
+  let mouth;
+  if(full<=15) mouth=`<ellipse cx="100" cy="116" rx="5" ry="6" fill="#7A3B33"/>`;
+  else if(mood>=60) mouth=`<path d="M89 111 Q100 126 111 111 Z" fill="#E9837B" stroke="${INK}" stroke-width="2.5" stroke-linejoin="round"/>`;
+  else if(mood>=30) mouth=`<path d="M92 114 Q100 120 108 114" fill="none" stroke="${INK}" stroke-width="3" stroke-linecap="round"/>`;
+  else mouth=`<path d="M92 119 Q100 112 108 119" fill="none" stroke="${INK}" stroke-width="3" stroke-linecap="round"/>`;
+  const eyes=tired>=80?`<g><path d="M73 90 h13 M114 90 h13" stroke="${INK}" stroke-width="3.5" stroke-linecap="round"/></g>`
+    :`<g class="eyes"><ellipse cx="80" cy="89" rx="5.2" ry="6" fill="${INK}"/><ellipse cx="120" cy="89" rx="5.2" ry="6" fill="${INK}"/><circle cx="81.8" cy="86.6" r="1.7" fill="#fff"/><circle cx="121.8" cy="86.6" r="1.7" fill="#fff"/></g>`;
+  let hat='';
+  if(w.hat==='satgat') hat=`<path d="M22 56 L100 2 L178 56 Q100 68 22 56Z" fill="#D9B877" stroke="${INK}" stroke-width="3" stroke-linejoin="round"/><path d="M100 4 L62 60 M100 4 L138 60 M100 4 L100 64" stroke="#B8945A" stroke-width="2"/><circle cx="100" cy="4" r="4" fill="${INK}"/>`;
+  if(w.hat==='beanie') hat=`<path d="M46 66 Q100 2 154 66 Z" fill="#E07A6E" stroke="${INK}" stroke-width="3" stroke-linejoin="round"/><rect x="42" y="56" width="116" height="16" rx="8" fill="#F2E6D0" stroke="${INK}" stroke-width="3"/><circle cx="100" cy="16" r="11" fill="#FFF7EA" stroke="${INK}" stroke-width="3"/>`;
+  if(w.hat==='lotuspin') hat=`<g transform="translate(138 42) rotate(18)"><ellipse cx="0" cy="-8" rx="6" ry="11" fill="#F3A3B8" stroke="${INK}" stroke-width="2"/><ellipse cx="-9" cy="-2" rx="6" ry="10" transform="rotate(-40)" fill="#F7BFCD" stroke="${INK}" stroke-width="2"/><ellipse cx="9" cy="-2" rx="6" ry="10" transform="rotate(40)" fill="#F7BFCD" stroke="${INK}" stroke-width="2"/><circle cx="0" cy="2" r="3.5" fill="#F4C95D"/></g>`;
+  if(w.hat==='straw') hat=`<ellipse cx="100" cy="50" rx="78" ry="15" fill="#EBCB7A" stroke="${INK}" stroke-width="3"/><path d="M60 50 Q62 6 100 6 Q138 6 140 50 Z" fill="#F0D489" stroke="${INK}" stroke-width="3"/><path d="M61 40 Q100 46 139 40 L140 48 Q100 54 60 48Z" fill="#D6564B"/>`;
+  let item='';
+  if(w.item==='moktak') item=`<line x1="150" y1="176" x2="170" y2="150" stroke="#8B5A2B" stroke-width="4" stroke-linecap="round"/><circle cx="171" cy="148" r="5" fill="#8B5A2B"/><ellipse cx="146" cy="186" rx="17" ry="13" fill="#B9773E" stroke="${INK}" stroke-width="3"/><path d="M134 186 h22" stroke="${INK}" stroke-width="3" stroke-linecap="round"/>`;
+  if(w.item==='broom') item=`<line x1="154" y1="112" x2="150" y2="188" stroke="#9A6A3A" stroke-width="5" stroke-linecap="round"/><path d="M150 184 L132 214 L170 214 Z" fill="#D9B56B" stroke="${INK}" stroke-width="3" stroke-linejoin="round"/>`;
+  if(w.item==='lantern') item=`<line x1="146" y1="178" x2="168" y2="142" stroke="#8B5A2B" stroke-width="4" stroke-linecap="round"/><line x1="168" y1="142" x2="168" y2="152" stroke="${INK}" stroke-width="2"/><circle cx="168" cy="168" r="22" fill="#FFD27A" opacity=".35"/><ellipse cx="168" cy="168" rx="14" ry="16" fill="#E5534B" stroke="${INK}" stroke-width="3"/><path d="M158 164 q10 -12 20 0 M156 172 q12 -10 24 0" stroke="#F7B1A8" stroke-width="2" fill="none"/>`;
+  const squirrel=w.item==='squirrel'?`<g transform="translate(48 104)"><path d="M-14 6 Q-30 -26 -4 -24 Q8 -22 -2 -8" fill="#B07648" stroke="${INK}" stroke-width="3"/><ellipse cx="4" cy="8" rx="12" ry="14" fill="#C68A5B" stroke="${INK}" stroke-width="3"/><circle cx="8" cy="-6" r="9" fill="#C68A5B" stroke="${INK}" stroke-width="3"/><circle cx="11" cy="-7" r="1.8" fill="${INK}"/><path d="M4 -14 l2 -6 l3 6" fill="#C68A5B" stroke="${INK}" stroke-width="2"/></g>`:'';
+  const halo=karma>=50?`<circle cx="100" cy="84" r="76" fill="url(#gl${u})"/><ellipse cx="100" cy="${w.hat==='none'||w.hat==='lotuspin'?16:-4}" rx="30" ry="7" fill="none" stroke="#F2C24E" stroke-width="4"/>`:'';
+  const horns=karma<=-30&&w.hat!=='satgat'&&w.hat!=='straw'?`<path d="M66 40 Q62 18 74 22 Q80 30 78 40Z M134 40 Q138 18 126 22 Q120 30 122 40Z" fill="#E86F5E" stroke="${INK}" stroke-width="2.5" stroke-linejoin="round"/>`:'';
+  return `<svg viewBox="0 0 200 222" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+  <defs><radialGradient id="gl${u}"><stop offset="0" stop-color="#FFE7A3" stop-opacity=".9"/><stop offset="1" stop-color="#FFE7A3" stop-opacity="0"/></radialGradient>
+  <pattern id="sd${u}" width="12" height="15" patternUnits="userSpaceOnUse"><rect width="12" height="3" fill="#E5534B"/><rect y="3" width="12" height="3" fill="#F4C95D"/><rect y="6" width="12" height="3" fill="#5FB36F"/><rect y="9" width="12" height="3" fill="#4D7FC4"/><rect y="12" width="12" height="3" fill="#F29BB8"/></pattern></defs>
+  ${halo}
+  <ellipse cx="100" cy="212" rx="52" ry="7" fill="rgba(60,40,30,.18)"/>
+  <ellipse cx="84" cy="203" rx="13" ry="7" fill="#FBFAF6" stroke="${INK}" stroke-width="3"/><ellipse cx="116" cy="203" rx="13" ry="7" fill="#FBFAF6" stroke="${INK}" stroke-width="3"/>
+  <path d="M68 128 Q100 120 132 128 L148 192 Q100 204 52 192 Z" fill="${rc}" stroke="${INK}" stroke-width="3" stroke-linejoin="round"/>
+  ${sd?`<rect x="60" y="160" width="80" height="9" fill="#D6564B"/>`:`<path d="M60 168 Q100 176 140 168" stroke="${rd}" stroke-width="4" fill="none"/>`}
+  <path d="M86 125 L106 156 M114 125 L100 144" stroke="#FFF6E8" stroke-width="6" stroke-linecap="round"/>
+  <ellipse cx="58" cy="160" rx="15" ry="24" fill="${sleeve}" stroke="${INK}" stroke-width="3"/><ellipse cx="142" cy="160" rx="15" ry="24" fill="${sleeve}" stroke="${INK}" stroke-width="3"/>
+  <circle cx="57" cy="181" r="9" fill="${SKIN}" stroke="${INK}" stroke-width="3"/><circle cx="143" cy="181" r="9" fill="${SKIN}" stroke="${INK}" stroke-width="3"/>
+  ${item}
+  <circle cx="45" cy="92" r="12" fill="${SKIN}" stroke="${INK}" stroke-width="3"/><circle cx="155" cy="92" r="12" fill="${SKIN}" stroke="${INK}" stroke-width="3"/>
+  <circle cx="100" cy="82" r="57" fill="${SKIN}" stroke="${INK}" stroke-width="3"/>
+  <path d="M50 66 Q100 2 150 66 Q100 40 50 66Z" fill="#A9A6AE" opacity=".22"/>
+  ${eyes}
+  <ellipse cx="66" cy="104" rx="10" ry="6" fill="#F4A3A0" opacity=".65"/><ellipse cx="134" cy="104" rx="10" ry="6" fill="#F4A3A0" opacity=".65"/>
+  <ellipse cx="100" cy="101" rx="4" ry="3" fill="#EFB3A0"/>
+  ${mouth}${horns}${hat}${squirrel}
+  </svg>`;
+}
+function art(ic,o){return `<div class="artwrap">${charSVG(o)}${ic?`<span class="badge">${ic}</span>`:''}</div>`}
+
+function sceneSVG(se){
+  const P={spring:['#BFDFEC','#F7E3E6','#A9C9B4','#7FAE95','#F2B3C3','#E8D8B5'],summer:['#8FCDE6','#DDF1E6','#8DBF96','#5E9C74','#5FA36A','#E2D3AE'],
+    autumn:['#F0CFA4','#F8EADA','#D7A877','#B9794E','#E08A45','#E6D2AC'],winter:['#C9D6E3','#EEF2F6','#DCE4EC','#B4C3D2',null,'#EEF1F4']}[se];
+  const [s1,s2,m1,m2,tree,gr]=P; const w=se==='winter';
+  const canopy=tree?`<g fill="${tree}" stroke="rgba(60,40,30,.25)" stroke-width="2"><circle cx="40" cy="104" r="34"/><circle cx="12" cy="124" r="26"/><circle cx="70" cy="122" r="26"/><circle cx="36" cy="138" r="24"/></g>`
+    :`<g stroke="#6E513C" stroke-width="4" stroke-linecap="round" fill="none"><path d="M36 150 L22 112 M36 140 L58 108 M30 126 L10 116 M48 124 L66 126"/></g><g fill="#fff"><ellipse cx="22" cy="112" rx="7" ry="3"/><ellipse cx="58" cy="108" rx="8" ry="3"/><ellipse cx="66" cy="126" rx="6" ry="2.5"/></g>`;
+  return `<svg class="scene" viewBox="0 0 400 270" preserveAspectRatio="xMidYMax slice" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+  <defs><linearGradient id="sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${s1}"/><stop offset="1" stop-color="${s2}"/></linearGradient></defs>
+  <rect width="400" height="270" fill="url(#sky)"/>
+  <circle cx="330" cy="46" r="17" fill="#FFF3D1" opacity=".95"/>
+  <path d="M0 150 Q60 86 120 128 T240 106 T400 122 V210 H0Z" fill="${m1}"/>
+  ${w?`<path d="M44 110 Q60 96 76 110 Q60 104 44 110Z M196 112 Q214 98 232 110 Q214 106 196 112Z" fill="#fff"/>`:''}
+  <path d="M0 172 Q80 122 150 160 T300 146 T400 160 V210 H0Z" fill="${m2}"/>
+  <rect y="192" width="400" height="80" fill="${gr}"/>
+  <path d="M176 270 L188 192 H212 L224 270Z" fill="rgba(120,100,80,.12)"/>
+  <g transform="translate(36 0)"><path d="M0 196 L4 150 h6 L14 196Z" fill="#7A5A44"/>${canopy}</g>
+  <g transform="translate(14 196)" stroke="${INK}" stroke-width="2"><ellipse cx="14" cy="10" rx="14" ry="14" fill="#7B4B33"/><rect x="6" y="-6" width="16" height="5" rx="2" fill="#5E3826"/><ellipse cx="40" cy="14" rx="11" ry="11" fill="#8A5639"/><rect x="34" y="1" width="12" height="4" rx="2" fill="#5E3826"/></g>
+  <g transform="translate(110 0)" stroke="rgba(60,50,45,.6)" stroke-width="2">
+    <rect x="-16" y="190" width="32" height="8" rx="2" fill="#B8B0A4"/><rect x="-5" y="160" width="10" height="30" fill="#C4BDB1"/>
+    <rect x="-14" y="138" width="28" height="22" rx="2" fill="#CBC4B8"/><rect x="-6" y="143" width="12" height="12" fill="#FFD983"/>
+    <path d="M-22 140 Q0 122 22 140Z" fill="#A9A196"/><circle cx="0" cy="124" r="4" fill="#A9A196"/>
+  </g>
+  <g transform="translate(258 0)">
+    <rect x="-6" y="176" width="160" height="18" fill="#B9B2A6"/>
+    <rect x="6" y="130" width="140" height="46" fill="#F3EBDD"/>
+    <g fill="#B5463A"><rect x="8" y="130" width="8" height="46"/><rect x="58" y="130" width="8" height="46"/><rect x="108" y="130" width="8" height="46"/></g>
+    <g fill="#C98B5A" stroke="rgba(80,50,30,.4)"><rect x="22" y="140" width="30" height="36"/><rect x="72" y="140" width="30" height="36"/><rect x="122" y="140" width="24" height="36"/></g>
+    <g stroke="rgba(80,50,30,.35)"><path d="M37 140 v36 M87 140 v36 M22 158 h30 M72 158 h30"/></g>
+    <rect x="2" y="122" width="150" height="8" fill="#3E8873"/>
+    <g fill="#C9483C"><circle cx="12" cy="126" r="2.2"/><circle cx="32" cy="126" r="2.2"/><circle cx="52" cy="126" r="2.2"/><circle cx="72" cy="126" r="2.2"/><circle cx="92" cy="126" r="2.2"/><circle cx="112" cy="126" r="2.2"/><circle cx="132" cy="126" r="2.2"/></g>
+    <rect x="2" y="119" width="150" height="3" fill="#2F5E88"/>
+    <path d="M-26 102 Q-8 120 16 118 L150 118 Q170 120 190 104 Q172 108 160 98 L128 78 L34 78 L8 98 Q-4 108 -26 102Z" fill="#4E5964"/>
+    <rect x="30" y="72" width="102" height="8" rx="4" fill="#3C454F"/>
+    ${w?`<path d="M-20 103 Q-6 112 14 110 L40 84 L126 84 L156 110 Q172 110 186 104 L160 96 L128 80 L36 80 L8 98Z" fill="#fff" opacity=".9"/>`:''}
+    <g fill="#E5534B" stroke="${INK}" stroke-width="1.5"><ellipse cx="30" cy="${w?140:138}" rx="7" ry="8" opacity="${se==='spring'?1:0}"/><ellipse cx="80" cy="138" rx="7" ry="8" opacity="${se==='spring'?1:0}"/></g>
+  </g>
+  </svg>`;
+}
+function particles(se){
+  const fx=$('#fx'); fx.innerHTML='';
+  const cfg={spring:{n:14,c:'#F6B9C9',w:7,h:5,r:'60% 0'},summer:{n:0},autumn:{n:12,c:'#E3893F',w:8,h:6,r:'0 60%'},winter:{n:22,c:'#FFFFFF',w:5,h:5,r:'50%'}}[se];
+  for(let i=0;i<cfg.n;i++){const e=document.createElement('i');e.style.cssText=`left:${rand(0,100)}%;width:${cfg.w}px;height:${cfg.h}px;background:${cfg.c};border-radius:${cfg.r};animation-duration:${rand(6,12)}s;animation-delay:-${rand(0,12)}s;--dx:${rand(-40,40)}px;opacity:.9`;fx.appendChild(e)}
+  if(se==='summer'){for(let i=0;i<6;i++){const e=document.createElement('i');e.style.cssText=`left:${rand(5,95)}%;top:${rand(40,80)}%;width:5px;height:5px;border-radius:50%;background:#FFF3A0;box-shadow:0 0 8px #FFE96A;animation:float ${rand(2,4)}s ease-in-out infinite;`;fx.appendChild(e)}}
+}
+
+/* ---------- 렌더 ---------- */
+let lastSeason='';
+function render(){
+  if(!S) return;
+  $('#nm').textContent=S.name+' 스님';
+  $('#age').textContent=`${S.age}살 · ${year()}년차`;
+  $('#date').innerHTML=`<b>${month()}월</b>`;
+  $('#coin').textContent=S.coin;
+  $('#bn').textContent=Math.max(0,108-S.ym*3);
+  const se=season();
+  if(se!==lastSeason){$('#scene').innerHTML=sceneSVG(se);particles(se);lastSeason=se}
+  $('#season').textContent=`${SEASON_N[se]} · ${month()}월`;
+  $('#snd').textContent=sound?'소리 켬':'소리 끔';
+  $('#heroArt').innerHTML=charSVG();
+  const a=apt();
+  $('#aptbar').firstElementChild.style.width=a+'%';$('#aptbar').setAttribute('aria-valuenow',a);
+  $('#tier').textContent=`${tierOf(a)} · ${a}`;
+  $('#karmaV').textContent=(S.karma>0?'+':'')+S.karma;
+  $('#karmaM').style.left=(50+S.karma/2)+'%';
+  for(const k of ['full','mood','tired']){$('#'+k+'V').textContent=S[k];$('#'+k+'B').style.width=S[k]+'%'}
+  renderTabs();renderPanel();
+}
+const TABS=[['plan','일정'],['meal','공양'],['farm','텃밭'],['craft','공방'],['wear','꾸미기'],['rec','기록']];
+function renderTabs(){
+  $('#tabs').innerHTML=TABS.map(([k,n])=>`<button role="tab" aria-selected="${UI.tab===k}" data-tab="${k}">${n}</button>`).join('');
+}
+function renderPanel(){
+  const p=$('#panel');
+  const f={plan:panelPlan,meal:panelMeal,farm:panelFarm,craft:panelCraft,wear:panelWear,rec:panelRec}[UI.tab];
+  p.innerHTML=f();
+}
+function panelPlan(){
+  const groups={};for(const [k,a] of Object.entries(ACTS))(groups[a.g]=groups[a.g]||[]).push([k,a]);
+  return `<div><h2>${year()}년차 ${month()}월의 일정</h2><p class="sub">칸을 고르고 아래에서 할 일을 정해 주세요. 한 달은 상순·중순·하순 세 번이에요.</p></div>
+  <div class="slots">${S.slots.map((id,i)=>{const a=ACTS[id];return `<button class="slot" data-slot="${i}" aria-pressed="${UI.slot===i}"><small>${SLOT_N[i]}</small><span class="ic">${a.ic}</span><span class="nm">${a.n}</span></button>`}).join('')}</div>
+  ${Object.entries(groups).map(([g,list])=>`<div class="grp"><h3>${g}</h3><div class="acts">${list.map(([k,a])=>`<button class="act" data-actpick="${k}"><span class="ic">${a.ic}</span><b>${a.n}</b><small>${fxText(a.fx)}</small></button>`).join('')}</div></div>`).join('')}
+  <button class="btn primary big" data-run>이번 달 보내기</button>
+  <p class="sub">피로가 80을 넘거나 배가 고프면 성과가 반으로 줄어요. 피로가 95를 넘으면 앓아눕고 말아요.</p>`;
+}
+function needText(need){return Object.entries(need).map(([k,v])=>`${CROPS[k].n} ${v} (보유 ${S.inv[k]})`).join(', ')}
+function canEat(m){if(m.need)for(const k in m.need)if(S.inv[k]<m.need[k])return false;if(m.cost&&S.coin<m.cost)return false;return true}
+function panelMeal(){
+  return `<div><h2>공양 시간</h2><p class="sub">배부름 ${S.full}/100. 한 순이 지날 때마다 12씩 줄어요. 착한 밥은 텃밭 작물로 지어요.</p></div>
+  <div class="list">${MEALS.map(m=>`<div class="item"><span class="ic">${m.ic}</span><div><b>${m.n}</b><small>${m.need?'재료: '+needText(m.need):m.tip}</small><small>${fxText(m.fx)}</small></div><button class="btn sm primary" data-eat="${m.id}" ${canEat(m)?'':'disabled'}>먹기</button></div>`).join('')}</div>
+  <div class="secret"><h3>몰래 먹는 나쁜 밥</h3><p class="sub">기분은 아주 좋아지지만 카르마가 내려가요. 주지스님께 들킬 수도 있어요.</p>
+  <div class="list">${BAD.map(m=>`<div class="item badfood"><span class="ic">${m.ic}</span><div><b>${m.n}</b><small>엽전 ${m.cost}닢 · ${fxText(m.fx)}</small></div><button class="btn sm" data-eat="${m.id}" ${canEat(m)?'':'disabled'}>몰래 먹기</button></div>`).join('')}</div></div>`;
+}
+function plotCost(){return S.plots.length===4?60:90}
+function panelFarm(){
+  const inv=Object.entries(CROPS).map(([k,c])=>`<span class="chip">${c.ic} ${c.n} <b>${S.inv[k]}</b></span>`).join('');
+  return `<div><h2>절 텃밭</h2><p class="sub">씨앗을 고른 뒤 빈 밭을 눌러 심어요. 한 순마다 자라고(겨울엔 천천히), 밭일을 하면 더 빨리 자라요. 화면을 켜 두기만 해도 조금씩 자라요.</p></div>
+  <div class="seedrow">${Object.entries(CROPS).map(([k,c])=>`<button class="chip" data-seed="${k}" aria-pressed="${UI.seed===k}">${c.ic} ${c.n} · ${c.cost}닢</button>`).join('')}</div>
+  <div class="plots">${S.plots.map((p,i)=>{
+    if(!p.c) return `<button class="plot empty" data-plot="${i}"><span class="ic">·</span><small>빈 밭<br>${CROPS[UI.seed].n} 심기</small><span></span></button>`;
+    const c=CROPS[p.c], ready=p.g>=c.grow, left=Math.ceil((c.grow-p.g)/2);
+    return `<button class="plot ${ready?'ready':''}" data-plot="${i}"><span class="ic" style="font-size:${ready?2.1:1.1+p.g/c.grow}rem">${ready||p.g>c.grow/3?c.ic:'🌱'}</span><small>${c.n} · ${ready?'수확하기!':'약 '+left+'순 남음'}</small><span class="bar"><i style="width:${Math.min(100,p.g/c.grow*100)}%"></i></span></button>`}).join('')}</div>
+  ${S.plots.length<6?`<button class="btn" data-expand ${S.coin<plotCost()?'disabled':''}>밭 한 뙈기 늘리기 · ${plotCost()}닢</button>`:''}
+  <div><h3 style="font-size:1rem;margin-bottom:6px">곳간</h3><div class="inv">${inv}</div></div>`;
+}
+function panelCraft(){
+  const L=S.lanterns, best=L.length?Math.max(...L):0, low=L.length?Math.min(...L):0;
+  return `<div><h2>작은 공방</h2><p class="sub">취미 시간에 만든 물건이 여기 모여요. 연등은 5월 부처님 오신 날 축제에 내걸 수 있어요.</p></div>
+  <div class="list">
+   <div class="item"><span class="ic">🏮</span><div><b>연등 ${L.length}개</b><small>${L.length?`가장 예쁜 연등 솜씨 ${best}점 · 가장 서툰 연등 ${low}점`:'일정에서 연등 만들기를 해 보세요'}</small></div>
+     <div style="display:grid;gap:4px"><button class="btn sm" data-sell="lantern" ${L.length?'':'disabled'}>팔기 +${5+Math.floor(low/5)}닢</button><button class="btn sm" data-offer="lantern" ${L.length?'':'disabled'}>불전에 올리기</button></div></div>
+   <div class="item"><span class="ic">📿</span><div><b>염주 ${S.beads}개</b><small>보리수 열매로 꿴 염주예요</small></div>
+     <div style="display:grid;gap:4px"><button class="btn sm" data-sell="beads" ${S.beads?'':'disabled'}>팔기 +12닢</button><button class="btn sm" data-offer="beads" ${S.beads?'':'disabled'}>불전에 올리기</button></div></div>
+  </div>
+  <p class="sub">팔면 엽전이 생기고, 불전에 올리면 카르마가 올라요. 가장 서툰 연등부터 내보내요.</p>`;
+}
+function unlocked(it){return !it.lock||(it.lock==='lantern'?S.flags.lantern:S.flags[it.lock])}
+function panelWear(){
+  return `<div><h2>동자스님 꾸미기</h2><p class="sub">엽전으로 산 모자, 옷, 소품은 바로 마당에서 보여요.</p></div>
+  ${Object.entries(WEAR).map(([cat,g])=>`<div class="grp"><h3>${g.n}</h3><div class="wears">${g.list.map(it=>{
+    const has=S.owned[cat].includes(it.id)||(it.lock&&unlocked(it)), on=S.wear[cat]===it.id;
+    let btn; if(on) btn=`<button class="btn sm" disabled>착용 중</button>`;
+    else if(has) btn=`<button class="btn sm primary" data-wear="${cat}:${it.id}">입기</button>`;
+    else if(it.lock) btn=`<small>${it.hint}</small>`;
+    else btn=`<button class="btn sm" data-buy="${cat}:${it.id}" ${S.coin<it.cost?'disabled':''}>${it.cost}닢에 사기</button>`;
+    return `<div class="wear" ${on?'data-on':''}><span class="ic">${it.ic}</span><b style="font-weight:400;font-family:var(--f-display)">${it.n}</b>${btn}</div>`}).join('')}</div></div>`).join('')}`;
+}
+const ENDINGS={
+  heir:{t:'큰스님의 후계자',ic:'🔔'},dokkaebi:{t:'꼬마 도깨비, 하산하다',ic:'👹'},mukbang:{t:'먹방 스님',ic:'🍜'},
+  zen:{t:'바위 같은 꼬마 선승',ic:'🪨'},scholar:{t:'경전 박사 학승',ic:'📜'},mercy:{t:'자비의 스님',ic:'🤲'},
+  artisan:{t:'연등 장인 스님',ic:'🏮'},farmer:{t:'텃밭 스님',ic:'🥬'},jester:{t:'웃음 전도사 스님',ic:'🤭'},normal:{t:'평범하고 착한 사미승',ic:'🍵'},
+};
+function panelRec(){
+  const gal=load(GAL)||{};
+  return `<div><h2>${S.name}의 기록</h2><p class="sub">능력치는 0에서 100까지 자라요. 3년 뒤, 자란 모습에 따라 앞날이 정해져요.</p></div>
+  <div class="stats">${STAT_KEYS.map(k=>`<div class="stat"><div class="lbl"><span>${NAME[k]} <small>${DESC[k]}</small></span><b>${S.st[k]}</b></div><div class="bar"><i style="width:${S.st[k]}%;background:var(--${{wis:'blue',pat:'green',com:'pink',str:'robe',dex:'gold',wit:'red'}[k]})"></i></div></div>`).join('')}</div>
+  <div class="kv"><span>나쁜 밥 <b>${S.cnt.bad}</b>번</span><span>만든 물건 <b>${S.cnt.craft}</b>개</span><span>수확 <b>${S.cnt.harvest}</b>번</span><span>장난 <b>${S.cnt.prank}</b>번</span><span>들킨 횟수 <b>${S.cnt.caught}</b>번</span><span>착한 밥 <b>${S.cnt.meal}</b>번</span></div>
+  <div><h3 style="font-size:1rem;margin-bottom:6px">엔딩 도감 ${Object.keys(gal).length} / ${Object.keys(ENDINGS).length}</h3>
+  <div class="gal">${Object.entries(ENDINGS).map(([k,e])=>gal[k]?`<div><b>${e.ic} ${e.t}</b>${gal[k]} 스님</div>`:`<div class="lock"><b>???</b>아직 못 본 앞날</div>`).join('')}</div></div>
+  ${UI.reset?`<div class="item"><span class="ic">⚠️</span><div><b>정말 처음부터 다시 할까요?</b><small>지금 키우던 ${S.name} 스님의 기록이 사라져요. 엔딩 도감은 남아요.</small></div><div style="display:grid;gap:4px"><button class="btn sm primary" data-reset="yes">다시 시작</button><button class="btn sm" data-reset="no">취소</button></div></div>`
+  :`<button class="btn" data-reset="ask">처음부터 다시 키우기</button>`}`;
+}
+
+/* ---------- 모달 ---------- */
+function modal({title,art:a='',body='',chips=null,choices=null,btn='다음'}){
+  return new Promise(res=>{
+    const ov=$('#ov');
+    ov.innerHTML=`<div class="mcard" role="dialog" aria-modal="true" aria-labelledby="mt">${a?`<div class="mart">${a}</div>`:''}<h2 id="mt">${title}</h2><div class="mbody">${body}</div>${chips?`<div class="chips">${chipHTML(chips)}</div>`:''}<div class="mbtns">${choices?choices.map((c,i)=>`<button class="btn choice ${i===0?'':''}" data-i="${i}"><b style="font-weight:400">${c.label}</b>${c.sub?`<small>${c.sub}</small>`:''}</button>`).join(''):`<button class="btn primary" data-i="0">${btn}</button>`}</div></div>`;
+    ov.hidden=false;
+    const b=ov.querySelector('button[data-i]'); b&&b.focus({preventScroll:true});
+    ov.querySelectorAll('button[data-i]').forEach(x=>x.onclick=()=>{ov.hidden=true;ov.innerHTML='';res(+x.dataset.i)});
+  });
+}
+const p=t=>t.split('\n').map(s=>`<p>${s}</p>`).join('');
+let toastT=0;
+function toast(html){const t=$('#toast');t.innerHTML=html;delete t.dataset.off;clearTimeout(toastT);toastT=setTimeout(()=>t.dataset.off='',2600)}
+let bubT=0;
+function bubble(txt){const b=$('#bubble');b.textContent=txt;delete b.dataset.off;clearTimeout(bubT);bubT=setTimeout(()=>b.dataset.off='',3200)}
+let AC=null;
+function tok(f=820){if(!sound)return;try{AC=AC||new (window.AudioContext||window.webkitAudioContext)();const t=AC.currentTime,o=AC.createOscillator(),g=AC.createGain();o.type='sine';o.frequency.setValueAtTime(f,t);o.frequency.exponentialRampToValueAtTime(f/2,t+.09);g.gain.setValueAtTime(.22,t);g.gain.exponentialRampToValueAtTime(.001,t+.2);o.connect(g).connect(AC.destination);o.start(t);o.stop(t+.22)}catch(e){}}
+
+/* ---------- 텃밭 성장 ---------- */
+function growAll(n){for(const pl of S.plots)if(pl.c)pl.g=Math.min(CROPS[pl.c].grow,pl.g+n)}
+
+/* ---------- 한 달 ---------- */
+async function runSlot(i){
+  let id=S.slots[i], a=ACTS[id]; const notes=[];
+  S.full=clamp(S.full-12,0,100);
+  if(S.tired>=95){a=SICK;id='sick'}
+  else if(S.mood<=10&&!['nap','hill','prank'].includes(id)&&Math.random()<.5){notes.push(`기분이 너무 안 좋아서 ${a.n} 대신 몰래 장난을 쳤어요.`);id='prank';a=ACTS.prank}
+  let mult=1;
+  if(!['nap','hill','prank','sick'].includes(id)){
+    if(S.tired>=80){mult*=.5;notes.push('너무 피곤해서 꾸벅꾸벅… 성과가 줄었어요.')}
+    if(S.full<=10){mult*=.5;notes.push('배가 고파서 집중이 안 됐어요. 공양을 챙겨 주세요.')}
+    else if(S.full>=70){mult*=1.1;notes.push('배가 든든해서 힘이 났어요!')}
+    if(S.mood<=15){mult*=.7;notes.push('시무룩해서 영 신이 안 났어요.')}
+    else if(S.mood>=80){mult*=1.1}
+  }
+  const d=applyFx(a.fx,mult);
+  let text=pick(a.say);
+  if(id==='lantern'){const q=clamp(S.st.dex+rand(-5,25),5,100);S.lanterns.push(q);S.cnt.craft++;S.flags.lantern=1;notes.push(`연등 하나 완성! 솜씨 ${q}점.`)}
+  if(id==='beads'){S.beads++;S.cnt.craft++;notes.push('염주 하나 완성!')}
+  if(id==='buddha'&&Math.random()<.18){merge(d,applyFx({karma:3,mood:5}));notes.push('부처님이 빙그레 웃으신 것 같아요!')}
+  if(id==='hill'&&Math.random()<.3){S.inv.lettuce++;notes.push('산나물을 한 줌 뜯어 왔어요. (상추 +1)')}
+  if(id==='hill')S.flags.hill=1;
+  if(id==='prank'){S.cnt.prank++;if(Math.random()<.3){S.cnt.caught++;merge(d,applyFx({karma:-2,mood:-12,pat:1}));notes.push('앗, 주지스님께 딱 걸렸어요! 꿀밤 한 대.')}}
+  if(id==='errand'&&S.st.com>=40&&Math.random()<.4){merge(d,applyFx({coin:10}));notes.push('착하다며 엽전을 더 얹어 주셨어요.')}
+  merge(d,applyFx({tired:-3}));
+  growAll(season()==='winter'?1:2); if(id==='farm')growAll(5);
+  S.cnt[id]=(S.cnt[id]||0)+1;
+  tok(id==='yebul'?620:820);
+  render();
+  await modal({title:`${SLOT_N[i]} · ${a.n}`,art:art(a.ic),body:p(text)+notes.map(n=>`<p class="note">${n}</p>`).join(''),chips:d});
+}
+async function runEvent(ev){
+  ev.pre&&ev.pre();
+  if(ev.choices){
+    const i=await modal({title:ev.title,art:ev.art,body:p(ev.text),choices:ev.choices});
+    const c=ev.choices[i]; const fx=typeof c.fx==='function'?c.fx():c.fx; const d=fx?applyFx(fx):{};
+    c.after&&c.after(d);
+    render();
+    await modal({title:ev.title,art:ev.art,body:p(typeof c.res==='function'?c.res():c.res),chips:d});
+  } else {
+    const d=ev.fx?applyFx(ev.fx):{}; ev.after&&ev.after(d); render();
+    await modal({title:ev.title,art:ev.art,body:p(ev.text),chips:d});
+  }
+  render();
+}
+function festival(){
+  const L=S.lanterns;
+  if(!L.length) return runEvent({title:'부처님 오신 날',art:art('🏮'),text:`절 마당 하늘이 알록달록한 연등으로 가득 찼어요.\n${nm()}는 고개를 한껏 젖히고 구경했어요. 내 연등이 없어서 조금 아쉬워요. 내년엔 꼭 만들어 봐야지!`,fx:{mood:8}});
+  const best=Math.max(...L);
+  const take=()=>L.splice(L.indexOf(best),1);
+  return runEvent({title:'부처님 오신 날 연등 축제',art:art('🏮'),text:`마을 사람들이 모두 모이는 연등 축제 날이에요. ${nm()}가 만든 연등 가운데 가장 예쁜 것은 솜씨 ${best}점짜리예요.`,
+    choices:[
+      {label:'가장 예쁜 연등을 축제에 내건다',sub:'솜씨가 좋을수록 큰 상을 받아요',fx:()=>{take();const sc=best+rand(0,15);S.flags.fest=sc;return sc>=75?{coin:50,com:3,karma:5,mood:20}:sc>=45?{coin:20,com:2,mood:12}:{mood:8,com:1}},
+        res:()=>S.flags.fest>=75?'연등 대상! 큰스님이 연등을 한참 바라보시더니 머리를 쓰다듬어 주셨어요.':S.flags.fest>=45?'입선! 할머니 보살님들이 "아이고 곱다" 하고 칭찬해 주셨어요.':'참가상으로 사탕 한 봉지를 받았어요. 연등이 조금 삐뚤었지만 제일 신나게 웃었어요.'},
+      {label:'연등을 마을 할머니께 선물한다',sub:'자비와 카르마가 올라요',fx:()=>{take();return {com:4,karma:4,mood:6}},res:'할머니가 연등을 꼭 안고 눈시울을 붉히셨어요. "우리 손주 같구나."'},
+    ]});
+}
+const KOANS=[
+  {q:'배고프면 무엇을 하느냐?',c:[['밥을 먹습니다',{wis:3},'허허, 바로 그것이다.'],['꾹 참습니다',{pat:3},'참는 것도 좋지만 굶지는 말거라.'],['라면을 끓입니다',{wit:4,karma:-1},'…이 녀석! (큰스님 어깨가 들썩였어요. 웃음을 참으신 걸까요?)']]},
+  {q:'마당의 낙엽은 어디서 왔느냐?',c:[['나무에서 왔습니다',{wis:3},'그렇지. 그럼 나무는 어디서 왔을꼬?'],['바람이 데려왔습니다',{wis:2,wit:2},'허허, 시를 쓰는구나.'],['제가 아직 안 쓸어서 거기 있습니다',{pat:2,wit:3},'…그럼 지금 쓸러 가거라.']]},
+  {q:'너는 누구냐?',c:[['__NAME__입니다',{com:2,wis:2},'이름은 이름일 뿐. 그래도 좋은 이름이구나.'],['모르겠습니다',{wis:5},'모른다는 것을 아는구나. 그게 시작이다.'],['큰스님의 제자입니다',{karma:3,pat:2},'허허, 그 말이 제일 듣기 좋구나.']]},
+];
+async function yearEnd(){
+  const k=KOANS[(year()-1)%3];
+  await runEvent({title:`큰스님의 문답 · ${year()}년차`,art:art('🍵'),text:`한 해를 마무리하는 날, 큰스님이 차를 따라 주시며 물으셨어요.\n"${k.q}"`,
+    choices:k.c.map(([l,fx,r])=>({label:l.replace('__NAME__',S.name),fx,res:r}))});
+  const a=apt(); const bonus=Math.round(a/2)+10;
+  const msg=a>=80?'허허, 벌써 큰스님 재목이로구나.':a>=60?'제법 의젓해졌구나. 장하다.':a>=40?'한 걸음씩 가면 된다. 잘하고 있다.':a>=20?'아직은 장난이 더 좋은 모양이구나. 그래도 괜찮다.':'…허허. 내년엔 조금만 더 힘내 보자꾸나.';
+  const d=applyFx({coin:bonus});render();
+  await modal({title:'한 해 돌아보기',art:art('🎐'),body:p(`스님 자질 ${a}점, ${tierOf(a)}.\n큰스님: "${msg}"\n용돈으로 엽전 ${bonus}닢을 받았어요.`),chips:d});
+}
+const FIXED={
+  5:festival,
+  7:()=>runEvent({title:'장마가 왔어요',art:art('🌧️'),pre:()=>growAll(6),text:`며칠째 비가 주룩주룩. 텃밭이 흠뻑 젖어 작물이 쑥쑥 자랐어요.\n${nm()}는 처마 밑에 쪼그려 앉았어요.`,
+    choices:[{label:'빗소리 들으며 참선',fx:{pat:3,wis:1},res:'똑, 똑, 똑. 빗방울을 세다 보니 마음이 고요해졌어요.'},{label:'물웅덩이에서 첨벙첨벙',fx:{mood:15,wit:3,str:1},res:'승복이 흙탕물 범벅! 그래도 이렇게 웃어 본 게 얼마 만인지.'}]}),
+  8:()=>runEvent({title:'템플스테이 손님',art:art('🎒'),text:'먼 나라에서 온 손님들이 절에 묵으러 왔어요. 모두 동자스님을 신기하게 바라봐요.',
+    choices:[{label:'절 구석구석을 안내한다',fx:{com:3,wis:1,coin:15},res:'"This is 범종!" 손짓 발짓으로 설명했더니 손님들이 박수를 쳐 주었어요.'},
+      {label:'엉뚱한 개그를 보여 준다',fx:()=>S.st.wit>=40?{wit:3,mood:12,coin:25}:{wit:3,mood:5},res:()=>S.st.wit>=43?'목탁 비트박스에 손님들이 배꼽을 잡았어요. 기념품 값이라며 엽전을 잔뜩!':'조금 어색한 침묵… 그래도 한 명이 웃어 줬어요.'}]}),
+  10:()=>runEvent({title:'마을 가을 운동회',art:art('🏃'),text:'아랫마을 학교 운동회에 초대받았어요. 이어달리기 한 자리가 비었대요!',
+    choices:[{label:'이어달리기에 나간다',sub:'체력이 중요해요',fx:()=>{S.flags.run=S.st.str;return S.st.str>=50?{coin:30,mood:15,str:2}:S.st.str>=30?{coin:10,mood:10,str:2}:{pat:2,mood:3,str:1}},
+        res:()=>S.flags.run>=50?'1등! 승복 자락을 휘날리며 바람처럼 달렸어요.':S.flags.run>=30?'2등! 아깝지만 모두가 박수를 쳐 줬어요.':'넘어졌지만 끝까지 뛰었어요. 무릎에 반창고 하나.'},
+      {label:'응원단장을 맡는다',fx:{wit:3,com:2,mood:10},res:'목탁 응원에 온 마을이 들썩였어요. "동자스님 최고!"'}]}),
+  12:()=>runEvent({title:'동짓날 팥죽',art:art('🥣'),text:'일 년 중 밤이 가장 긴 날. 공양간 가마솥에서 팥죽이 보글보글 끓어요.',
+    choices:[{label:'새알심을 동글동글 빚는다',fx:{dex:2,karma:2,mood:5},res:'제 나이만큼 새알심을 먹으면 한 살 더 먹는대요. 몰래 두 개 더 먹었어요.'},{label:'팥죽을 세 그릇 먹는다',fx:{full:60,mood:10,str:1},res:'배가 남산만 해졌어요. 끄윽.'}]}),
+  1:()=>runEvent({title:'설날',art:art('🧧'),pre:()=>{},text:`신도분들께 세배를 드렸더니 세뱃돈이 30닢이나 생겼어요!`,
+    choices:[{label:'절반은 불전함에 넣는다',fx:{coin:15,karma:5,com:1},res:'불전함에 엽전이 떨어지는 소리가 맑게 울렸어요.'},{label:'전부 꼭꼭 숨겨 둔다',fx:{coin:30,wit:2,mood:5,karma:-1},res:'베개 속에 숨겼어요. 큰스님은 다 아시는 눈치예요.'}]}),
+  2:yearEnd,
+};
+const RAND=[
+  {id:'squirrel',w:()=>!S.flags.squirrel&&S.flags.hill,ev:()=>({title:'다람쥐 한 마리',art:art('🐿️'),text:'뒷산 바위 위에서 다람쥐가 도토리를 굴리며 이쪽을 빤히 보고 있어요.',
+    choices:[{label:'도토리를 나눠 준다',fx:{com:3,karma:2},res:'다람쥐가 어깨 위로 쪼르르! 이제 둘도 없는 친구예요. (꾸미기에 다람쥐 친구가 생겼어요)',after:()=>{S.flags.squirrel=1;own('item','squirrel')}},
+      {label:'살금살금 쫓아간다',fx:{str:2,wit:2,mood:6},res:'다람쥐는 휙 사라지고, 솔방울만 한가득 주워 왔어요.'}]})},
+  {id:'berry',w:()=>season()==='summer',ev:()=>({title:'산딸기 덤불',art:art('🍓'),text:'개울가에서 빨갛게 익은 산딸기를 잔뜩 발견했어요!',
+    choices:[{label:'큰스님께 갖다 드린다',fx:{karma:3,com:2},res:'큰스님이 한 알만 드시고 나머지는 도로 주셨어요. "같이 먹자꾸나."'},{label:'혼자 다 먹는다',fx:{mood:12,full:15,karma:-1},res:'입가가 빨개졌어요. 증거 인멸 실패!'}]})},
+  {id:'caught',w:()=>S.cnt.bad>=3,ev:()=>({title:'수상한 라면 냄새',art:art('🍜'),text:'"어디서 라면 냄새가 나는고?" 주지스님이 코를 킁킁거리며 다가오셨어요.',
+    choices:[{label:'솔직히 말씀드린다',fx:{karma:3,pat:2,mood:-5},res:'"솔직하니 됐다. 다음엔 나도 한 젓가락 주거라." …네?'},{label:'고양이 탓을 한다',fx:{wit:3,karma:-5},res:'"고양이가 젓가락질을 하더냐?" 꿀밤 두 대.',after:()=>S.cnt.caught++}]})},
+  {id:'nightmare',w:()=>S.karma<=-20,ev:()=>({title:'도깨비 꿈',art:art('👹'),text:'꿈에 뿔 달린 도깨비가 나와서 "넌 이제 우리 편이야!" 하고 웃었어요. 식은땀이 줄줄.',
+    choices:[{label:'불상 앞에서 반성한다',fx:{karma:6,pat:1},res:'부처님 앞에 앉아 있으니 마음이 조금 가벼워졌어요.'},{label:'이불 속에 숨는다',fx:{mood:-10,wit:1},res:'이불 밖은 위험해요… 아침까지 덜덜.'}]})},
+  {id:'kids',w:()=>true,ev:()=>({title:'마을 아이들',art:art('🪶'),text:'아랫마을 아이들이 절 앞까지 놀러 왔어요. "동자스님, 같이 놀자!"',
+    choices:[{label:'같이 제기차기',fx:{str:2,mood:12,wit:1},res:'열두 번이나 찼어요! 새 기록이에요.'},{label:'"수행 중이라 안 돼"',fx:{pat:3,mood:-4},res:'아이들 웃음소리가 담 너머로 들려와서 조금 아쉬웠어요.'}]})},
+  {id:'kitten',w:()=>true,ev:()=>({title:'길 잃은 아기 고양이',art:art('🐈'),text:'공양간 뒤에서 아기 고양이가 가냘프게 울고 있어요.',
+    choices:[{label:'흰죽을 나눠 준다',fx:{com:4,karma:2,full:-10},res:'고양이가 그릇을 싹 비우고 무릎 위에서 잠들었어요.'},{label:'큰스님께 알린다',fx:{com:2,wis:1},res:'큰스님이 공양간 한쪽에 고양이 집을 만들어 주셨어요.'}]})},
+  {id:'snow',w:()=>season()==='winter',ev:()=>({title:'첫눈',art:art('⛄'),text:'자고 일어나니 온 산이 하얘졌어요!',
+    choices:[{label:'부처님 모양 눈사람 만들기',fx:{dex:2,mood:15,karma:1},res:'완성하고 보니 큰스님을 닮았어요.'},{label:'눈싸움!',fx:{str:2,wit:2,mood:15},res:'지나가던 스님 뒤통수에 명중. 도망!'}]})},
+  {id:'blossom',w:()=>season()==='spring',ev:()=>({title:'벚꽃 바람',art:art('🌸'),text:'바람이 불 때마다 꽃잎이 눈처럼 흩날려요.',
+    choices:[{label:'꽃잎을 모아 책갈피 만들기',fx:{dex:2,mood:8},res:'경전 사이에 꽂아 두었어요. 공부할 맛이 나요.'},{label:'꽃나무 아래 낮잠',fx:{tired:-20,mood:8},res:'일어나 보니 머리 위에 꽃잎이 소복이 쌓였어요.'}]})},
+  {id:'grandma',w:()=>S.st.com>=25,ev:()=>({title:'보살 할머니',art:art('🍡'),fx:{coin:20,full:30,mood:10},text:'늘 오시는 보살 할머니가 "우리 동자스님 주려고" 떡과 엽전을 싸 오셨어요.'})},
+  {id:'firefly',w:()=>season()==='summer',ev:()=>({title:'반딧불이 밤',art:art('✨'),text:'밤 마당에 반딧불이가 별처럼 떠다녀요.',
+    choices:[{label:'소원을 빈다',fx:{mood:10,karma:1},res:'"큰스님이 오래오래 건강하시게 해 주세요."'},{label:'잡아서 병에 담는다',fx:{wit:2,mood:5,karma:-2},res:'금방 불쌍해져서 놓아주었어요.'}]})},
+  {id:'leaves',w:()=>season()==='autumn',ev:()=>({title:'낙엽 산',art:art('🍁'),text:'마당을 쓸다 보니 낙엽이 산더미처럼 쌓였어요.',
+    choices:[{label:'끝까지 다 쓴다',fx:{pat:3,str:1,karma:1},res:'반짝반짝한 마당을 보니 뿌듯해요.'},{label:'낙엽 더미에 다이빙!',fx:{wit:3,mood:15,pat:-1},res:'바스락! 그리고 처음부터 다시 쓸었어요.'}]})},
+  {id:'moktak',w:()=>S.st.wit>=30,ev:()=>({title:'목탁 비트박스',art:art('🪵'),text:'예불 시간, 목탁 박자가 자꾸만 신나는 리듬으로 바뀌어요. 똑또르륵 똑똑!',
+    choices:[{label:'정신 차리고 원래 박자로',fx:{pat:3},res:'휴, 아무도 눈치채지 못했어요. 아마도.'},{label:'끝까지 리듬을 탄다',fx:{wit:4,mood:10,karma:-2},res:'스님들 어깨가 들썩였어요. 큰스님 눈썹도 들썩였어요.'}]})},
+  {id:'sutra-q',w:()=>S.st.wis>=35,ev:()=>({title:'어려운 질문',art:art('❓'),text:'마을 꼬마가 물었어요. "스님, 부처님도 어릴 땐 장난쳤어요?"',
+    choices:[{label:'경전에서 답을 찾아본다',fx:{wis:3,com:1},res:'함께 책을 뒤적이다 둘 다 잠들었어요.'},{label:'"아마 너보다 더 쳤을걸?"',fx:{wit:3,mood:6},res:'꼬마가 깔깔 웃으며 돌아갔어요.'}]})},
+];
+async function randomEvent(force){
+  const pool=RAND.filter(r=>r.w()&&!S.seen[r.id+'-'+year()]);
+  if(!pool.length)return;
+  const r=pick(pool); S.seen[r.id+'-'+year()]=1;
+  await runEvent(r.ev());
+}
+async function runMonth(){
+  if(UI.busy||!S||S.done)return; UI.busy=true;
+  try{
+    for(let i=0;i<3;i++) await runSlot(i);
+    const m=month();
+    if(FIXED[m]) await FIXED[m]();
+    if(Math.random()<(FIXED[m]?.3:.65)) await randomEvent();
+    S.tired=clamp(S.tired-8,0,100); S.taps=6;
+    if(S.ym>=35){S.ym=36;save();await ending();return}
+    S.ym++;
+    if(month()===3){S.age++;render();await modal({title:'새봄이 왔어요',art:art('🌸'),body:p(`${nm()}가 한 살 더 먹어 ${S.age}살이 되었어요.\n남은 시간은 ${3-Math.floor(S.ym/12)}년이에요.`)})}
+    save(); render();
+    bubble(pick(['다음 달엔 뭐 해요?','휴, 한 달 끝!','오늘 공양은 뭐예요?']));
+  } finally { UI.busy=false }
+}
+function decideEnding(){
+  const s=S.st, a=apt();
+  if(S.karma<=-40) return 'dokkaebi';
+  if(a>=72&&S.karma>=55&&Math.min(s.wis,s.pat,s.com)>=55) return 'heir';
+  if(S.cnt.bad>=15) return 'mukbang';
+  const c=[];
+  if(s.pat>=70&&s.wis>=45) c.push(['zen',s.pat]);
+  if(s.wis>=70) c.push(['scholar',s.wis]);
+  if(s.com>=70&&S.karma>=20) c.push(['mercy',s.com]);
+  if(s.dex>=70||S.cnt.craft>=24) c.push(['artisan',Math.max(s.dex,S.cnt.craft*3)]);
+  if(S.cnt.harvest>=18&&s.str>=45) c.push(['farmer',s.str+S.cnt.harvest]);
+  if(s.wit>=70) c.push(['jester',s.wit]);
+  if(!c.length) return 'normal';
+  c.sort((x,y)=>y[1]-x[1]); return c[0][0];
+}
+function endingText(k){
+  const n=S.name, N=nm();
+  return {
+    heir:`스무 해가 흐른 뒤, 산사의 새벽 종은 ${n} 스님이 울립니다.\n어린 날 졸린 눈을 비비며 올리던 예불, 마당을 쓸던 싸리비, 할머니께 드린 연등. 그 모든 날이 모여 큰스님의 자리를 이었어요.\n오늘도 ${n} 스님은 장난꾸러기 동자스님의 머리를 쓰다듬으며 말합니다. "배고프면 밥부터 먹거라."`,
+    dokkaebi:`장난이 조금, 아니 많이 지나쳤나 봐요.\n${N}는 결국 산을 내려가 마을 학교에 다니게 되었어요. 별명은 '절에서 온 도깨비'.\n그래도 초파일이면 꼭 절에 올라와 불상을 닦고 간대요. 큰스님은 그 모습을 보며 허허 웃으십니다.`,
+    mukbang:`몰래 먹던 컵라면의 맛을 끝내 잊지 못한 ${n} 스님.\n어른이 되어 연 '사찰음식 먹방' 채널이 대박이 났어요. 나물 비빔밥 한 그릇에 구독자 100만!\n다만 고기만두 영상은 큰스님께 들켜 하루 만에 내려갔다는 소문이에요.`,
+    zen:`${n} 스님은 한번 앉으면 다람쥐가 머리 위에 올라와도 꿈쩍하지 않는 선승이 되었어요.\n사람들은 '바위 스님'이라 부르며 먼 길을 찾아와 함께 앉아 있다 갑니다.\n가끔 아주 가끔, 코끝에 앉은 파리 때문에 웃음을 참는다는 건 비밀이에요.`,
+    scholar:`경전 한 권을 통째로 외운 ${N}는 커서 이름난 학승이 되었어요.\n어려운 한자를 쉬운 말로 풀어 주는 ${n} 스님의 책은 아이들 머리맡에 한 권씩 놓여 있대요.\n첫 장에는 이렇게 적혀 있어요. "배고프면 밥을 먹을 것."`,
+    mercy:`${n} 스님이 지나가면 마을 할머니들이 손을 흔들고, 아기 고양이들이 줄지어 따라와요.\n아픈 사람 곁에 앉아 이야기를 들어 주는 스님. 사람들은 그 미소만 봐도 마음이 놓인다고 해요.\n어린 시절 흰죽을 나눠 주던 그 마음 그대로예요.`,
+    artisan:`${n} 스님이 만든 연등은 해마다 축제의 한가운데에 걸려요.\n한지 꽃잎 한 장 한 장에 정성을 담는 연등 장인 스님. 멀리서 배우러 오는 사람도 많대요.\n첫 작품, 삐뚤빼뚤한 그 연등은 지금도 방 한쪽에 걸려 있어요.`,
+    farmer:`${n} 스님의 텃밭에선 사계절 내내 무언가가 자라요.\n봄엔 상추, 여름엔 감자, 가을엔 고구마, 겨울엔 김장 배추. 수확한 작물은 모두 마을과 나눠요.\n흙 묻은 손으로 합장하는 텃밭 스님, 오늘도 지렁이에게 먼저 인사합니다.`,
+    jester:`${n} 스님의 법문 시간은 언제나 웃음바다예요.\n목탁 비트박스, 염주 저글링, 그리고 마지막엔 꼭 마음에 남는 한마디. 사람들은 '웃음 전도사 스님'이라 부릅니다.\n큰스님도 몰래 맨 뒷줄에서 듣고 가신대요.`,
+    normal:`특별히 대단한 일은 없었지만, ${N}는 무럭무럭 자라 착한 사미승이 되었어요.\n새벽엔 예불을 올리고, 낮엔 마당을 쓸고, 저녁엔 별을 봅니다.\n큰스님은 말씀하셨어요. "평범한 하루를 잘 사는 것, 그게 수행이란다."`,
+  }[k];
+}
+async function ending(){
+  const k=decideEnding(), e=ENDINGS[k];
+  S.done=k; save();
+  const gal=load(GAL)||{}; const fresh=!gal[k]; gal[k]=S.name; store(GAL,gal);
+  render();
+  const stats=STAT_KEYS.map(s=>`<span>${NAME[s]} ${S.st[s]}</span>`).join('');
+  await modal({title:`엔딩 · ${e.t}`,art:art(e.ic),body:p(endingText(k))+`<div class="ending-stats">${stats}</div><p class="note" style="text-align:center">스님 자질 ${apt()} · 카르마 ${S.karma>0?'+':''}${S.karma}${fresh?' · 새 엔딩을 도감에 기록했어요':''} · 도감 ${Object.keys(gal).length}/${Object.keys(ENDINGS).length}</p>`,btn:'새 동자스님 맞이하기'});
+  showTitle();
+}
+
+/* ---------- 상호작용 ---------- */
+function say(){
+  if(S.full<=20) return pick(['배고파요… 꼬르륵','스님, 공양 시간 아직이에요?']);
+  if(S.tired>=75) return pick(['하암… 졸려요','눈꺼풀이 천 근이에요']);
+  if(S.mood<=25) return pick(['힝…','오늘은 아무것도 하기 싫어요']);
+  if(S.karma<=-30) return pick(['히히, 아무도 못 봤겠지?','라면… 또 먹고 싶다']);
+  if(S.karma>=50&&Math.random()<.5) return pick(['오늘은 마음이 참 맑아요','부처님이 웃으시는 것 같아요']);
+  const se={spring:['꽃잎이 머리에 붙었어요!','봄바람 냄새가 좋아요'],summer:['더워요, 개울 가고 싶다','매미가 경전을 외우나 봐요'],autumn:['낙엽 밟는 소리 좋아요','고구마 구워 먹고 싶어요'],winter:['코가 시려요','눈사람 만들고 싶어요']}[season()];
+  return pick([...se,'스님, 오늘은 뭐 해요?','똑똑똑, 목탁 소리','머리 쓰다듬어 주세요','저 키 컸어요?']);
+}
+function onHero(){
+  if(!S||UI.busy)return;
+  const h=$('#hero'); h.classList.remove('hop'); void h.offsetWidth; h.classList.add('hop');
+  tok(); bubble(say());
+  if(S.taps>0){S.taps--; if(Math.random()<.5){S.coin++;popAt(h,'+1');} S.mood=clamp(S.mood+1,0,100); save(); render()}
+}
+function popAt(el,txt){const st=$('#stage').getBoundingClientRect(),r=el.getBoundingClientRect();const s=document.createElement('span');s.className='pop';s.textContent=txt;s.style.left=(r.left-st.left+r.width/2-10)+'px';s.style.top=(r.top-st.top)+'px';$('#stage').appendChild(s);setTimeout(()=>s.remove(),1000)}
+function spawnMote(){
+  if(!S||document.hidden||document.querySelectorAll('.mote').length>=3)return;
+  const b=document.createElement('button');b.className='mote';b.setAttribute('aria-label','공덕 방울 줍기');
+  b.style.left=rand(6,86)+'%';b.style.top=rand(8,46)+'%';
+  b.onclick=()=>{const v=rand(1,3);S.coin+=v;popAt(b,'+'+v);tok(1100);b.remove();save();render()};
+  $('#stage').appendChild(b);
+  setTimeout(()=>b.remove(),45000);
+}
+function wander(){
+  if(!S||UI.busy)return;
+  const x=rand(-70,70), h=$('#hero'), cur=parseFloat(h.style.getPropertyValue('--x'))||0;
+  h.classList.toggle('flip',x<cur);
+  h.style.setProperty('--x',x+'px'); $('#bubble').style.setProperty('--x',x+'px');
+}
+let rtAcc=0;
+function tick(){
+  if(!S||S.done)return;
+  rtAcc++;
+  if(rtAcc%120===0){growAll(1);S.coin++;save();if(['farm'].includes(UI.tab)&&!UI.busy)render();else{$('#coin').textContent=S.coin}}
+  if(rtAcc%22===0)spawnMote();
+  if(rtAcc%7===0)wander();
+  if(rtAcc%15===0)save();
+}
+
+document.addEventListener('click',e=>{
+  const t=e.target.closest('button'); if(!t||!S)return;
+  const ds=t.dataset;
+  if(ds.tab){UI.tab=ds.tab;UI.reset=false;renderTabs();renderPanel();return}
+  if(ds.slot!==undefined){UI.slot=+ds.slot;renderPanel();return}
+  if(ds.actpick){S.slots[UI.slot]=ds.actpick;UI.slot=(UI.slot+1)%3;save();renderPanel();return}
+  if('run' in ds){runMonth();return}
+  if(ds.eat){eat(ds.eat);return}
+  if(ds.seed){UI.seed=ds.seed;renderPanel();return}
+  if(ds.plot!==undefined){plot(+ds.plot);return}
+  if('expand' in ds){const c=plotCost();if(S.coin>=c){S.coin-=c;S.plots.push({c:null,g:0});toast('밭이 한 뙈기 늘었어요!');save();render()}return}
+  if(ds.sell){sell(ds.sell,false);return}
+  if(ds.offer){sell(ds.offer,true);return}
+  if(ds.buy){const [cat,id]=ds.buy.split(':');const it=WEAR[cat].list.find(x=>x.id===id);if(S.coin>=it.cost){S.coin-=it.cost;own(cat,id);S.wear[cat]=id;toast(`${it.n}을(를) 샀어요!`);tok(1000);save();render()}return}
+  if(ds.wear){const [cat,id]=ds.wear.split(':');S.wear[cat]=id;save();render();bubble(pick(['어때요, 잘 어울려요?','헤헤, 멋지죠?']));return}
+  if(ds.reset){if(ds.reset==='ask')UI.reset=true;else if(ds.reset==='no')UI.reset=false;else{UI.reset=false;try{localStorage.removeItem(SAVE)}catch(e){}S=null;showTitle();return}renderPanel();return}
+});
+$('#hero').addEventListener('click',onHero);
+$('#snd').addEventListener('click',()=>{sound=!sound;store(SND,sound);$('#snd').textContent=sound?'소리 켬':'소리 끔';if(sound)tok()});
+
+function eat(id){
+  const m=MEALS.find(x=>x.id===id)||BAD.find(x=>x.id===id), bad=BAD.includes(m);
+  if(S.full>=95){toast('배불러서 더는 못 먹겠어요');bubble('배불러요…');return}
+  if(!canEat(m))return;
+  if(m.need)for(const k in m.need)S.inv[k]-=m.need[k];
+  if(m.cost)S.coin-=m.cost;
+  const d=applyFx(m.fx);
+  if(bad){S.cnt.bad++;
+    if(Math.random()<.25){S.cnt.caught++;merge(d,applyFx({karma:-2,mood:-10,pat:1}));save();render();
+      modal({title:'딱 걸렸다!',art:art(m.ic),body:p(`${m.n}을(를) 먹다가 주지스님과 눈이 마주쳤어요.\n"…맛있느냐?" 꿀밤 한 대와 함께 반성문 한 장.`),chips:d});return}
+  } else S.cnt.meal++;
+  tok(700); bubble(bad?pick(['쉿… 맛있다','히히, 비밀이에요']):pick(['잘 먹겠습니다!','냠냠, 맛있어요','배가 든든해요']));
+  toast(`${m.ic} ${m.n} 냠냠 · `+Object.entries(d).filter(([k,v])=>v).map(([k,v])=>`${NAME[k]} ${v>0?'+':''}${v}`).join(', '));
+  save(); render();
+}
+function plot(i){
+  const pl=S.plots[i];
+  if(!pl.c){const c=CROPS[UI.seed];if(S.coin<c.cost){toast(`엽전이 모자라요. ${c.n} 씨앗은 ${c.cost}닢이에요.`);return}S.coin-=c.cost;pl.c=UI.seed;pl.g=0;toast(`${c.ic} ${c.n}을(를) 심었어요`);save();render();return}
+  const c=CROPS[pl.c];
+  if(pl.g<c.grow){toast(`${c.n}이(가) 아직 자라는 중이에요`);return}
+  const y=c.yield+(S.st.str>=50?1:0); S.inv[pl.c]+=y; S.cnt.harvest++; pl.c=null; pl.g=0;
+  const d=applyFx({mood:4}); tok(900); toast(`${c.ic} ${c.n} ${y}개 수확! 기분 +${d.mood||0}`); bubble('우와, 풍년이에요!'); save(); render();
+}
+function sell(kind,offer){
+  let d={};
+  if(kind==='lantern'){if(!S.lanterns.length)return;const low=Math.min(...S.lanterns);S.lanterns.splice(S.lanterns.indexOf(low),1);d=applyFx(offer?{karma:2,com:1}:{coin:5+Math.floor(low/5)})}
+  else{if(!S.beads)return;S.beads--;d=applyFx(offer?{karma:2,wis:1}:{coin:12})}
+  toast((offer?'불전에 올렸어요 · ':'팔았어요 · ')+Object.entries(d).filter(([k,v])=>v).map(([k,v])=>`${NAME[k]} +${v}`).join(', '));
+  tok(offer?600:1000); save(); render();
+}
+
+/* ---------- 타이틀 ---------- */
+function showTitle(){
+  const sv=load(SAVE); const gal=load(GAL)||{};
+  const T=$('#title');
+  const demo={wear:{hat:'none',robe:'orange',item:'none'},mood:80,karma:0,full:80,tired:0};
+  T.innerHTML=`<div class="titlecard"><div class="artwrap">${charSVG(demo)}</div><h1>동자스님 키우기</h1>
+   <p class="sub">산사에 들어온 여섯 살 동자스님과 함께하는 3년. 일정을 짜고, 밥을 챙기고, 텃밭을 가꾸며 108번의 번뇌를 지나 보내요.</p>
+   ${sv&&!sv.done?`<div class="btns"><button class="btn primary big" id="cont">${sv.name} 스님 이어서 키우기</button><button class="btn" id="fresh">새로 시작하기</button></div>`:
+   `<label for="nameInput" class="sub">동자스님의 이름을 지어 주세요</label><input id="nameInput" maxlength="6" value="${pick(['도담','보리','연우','소담','다솜','해동'])}" autocomplete="off"><div class="btns"><button class="btn primary big" id="start">절에 들어가기</button></div>`}
+   <p class="sub">엔딩 도감 ${Object.keys(gal).length} / ${Object.keys(ENDINGS).length}</p></div>`;
+  T.hidden=false;
+  const c=$('#cont'), f=$('#fresh'), s=$('#start');
+  if(c)c.onclick=()=>{S=sv;migrate();T.hidden=true;lastSeason='';welcomeBack();render()};
+  if(f)f.onclick=()=>{try{localStorage.removeItem(SAVE)}catch(e){}showTitle()};
+  if(s){const go=async()=>{const n=($('#nameInput').value||'').trim().slice(0,6)||'도담';newGame(n);T.hidden=true;lastSeason='';UI.tab='plan';UI.slot=0;save();render();tok();
+      await modal({title:'산사에 온 걸 환영한다',art:art('🍵'),body:p(`큰스님: "오늘부터 너는 ${nm()}다. 이곳에서 세 해를 지내며 무엇이 될지는 네 마음에 달렸단다."\n일정에서 한 달 계획을 세우고, 공양에서 밥을 챙겨 주세요. 착한 밥은 텃밭에서, 나쁜 밥은 몰래.\n화면을 켜 두면 마당에 공덕 방울이 떠올라요. 눌러서 엽전을 모으세요.`),btn:'시작하기'});
+      bubble('잘 부탁드려요, 스님!')};
+    s.onclick=go;$('#nameInput').onkeydown=e=>{if(e.key==='Enter')go()}}
+}
+function migrate(){S.cnt=Object.assign({bad:0,craft:0,harvest:0,prank:0,meal:0,caught:0},S.cnt||{});S.flags=S.flags||{};S.seen=S.seen||{}}
+function welcomeBack(){
+  const el=(Date.now()-(S.lastSeen||Date.now()))/1000;
+  const g=Math.min(Math.floor(el/120),30), c=Math.min(Math.floor(el/90),100);
+  if(g>0||c>0){growAll(g);S.coin+=c;save();toast(`기다리는 동안 텃밭이 자라고 시주함에 엽전 ${c}닢이 모였어요`)}
+}
+
+/* ---------- 시작 ---------- */
+function boot(data){
+  if(data&&data.S){S=data.S;migrate();$('#title').hidden=true;render()}
+  else{const sv=load(SAVE);
+    if(sv&&!sv.done){S=sv;migrate();render();showTitle()}
+    else{newGame('도담');render();showTitle();S=null}
+  }
+  setInterval(tick,1000);
+}
+window.claude?.hot?.snapshot?.(()=>({S}));
+window.claude?.hot?.ready ? window.claude.hot.ready(boot) : boot(window.claude?.hot?.data ?? {});
+})();
+</script>
+
+</html>
